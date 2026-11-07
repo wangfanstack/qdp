@@ -1,0 +1,3 @@
+cn.sailstack.qdp.framework.security.config.QdpSecurityAutoConfiguration
+cn.sailstack.qdp.framework.security.config.QdpWebSecurityConfigurerAdapter
+cn.sailstack.qdp.framework.operatelog.config.QdpOperateLogConfiguration

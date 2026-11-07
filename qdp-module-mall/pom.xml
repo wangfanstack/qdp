@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>qdp</artifactId>
+        <groupId>cn.sailstack.qdp</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>qdp-module-mall</artifactId>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
+
+    <description>
+        商城大模块，由 product 商品、promotion 营销、trade 交易、statistics 统计等组成
+    </description>
+    <modules>
+        <module>qdp-module-product</module>
+        <module>qdp-module-promotion</module>
+        <module>qdp-module-trade</module>
+        <module>qdp-module-statistics</module>
+        <!--
+            特殊：为什么会有 qdp-module-trade-api 呢？
+                qdp-module-promotion 和 qdp-module-trade 之间相互循环依赖，所以抽出 qdp-module-trade-api 模块，这样：
+                1. qdp-module-promotion 依赖 qdp-module-trade-api
+                2. qdp-module-trade 依赖 qdp-module-promotion
+            从而不存在相互（循环）依赖，即 qdp-module-trade => qdp-module-promotion => qdp-module-trade-api
+         -->
+        <module>qdp-module-trade-api</module>
+    </modules>
+
+</project>

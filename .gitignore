@@ -1,0 +1,91 @@
+######################################################################
+# Build Tools
+
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
+
+### Gradle ###
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+######################################################################
+# IDE
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/*
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+######################################################################
+# Others
+
+*.log
+*.xml.versionsBackup
+*.swp
+
+hs_err_pid*
+.attach_pid*
+rebel.xml
+
+application-my.yaml
+application-local.yaml
+
+######################################################################
+# OS
+
+.DS_Store
+Thumbs.db
+
+######################################################################
+# Frontend
+
+/hft-ui-app/unpackage/
+
+######################################################################
+# AI / Agent
+
+.claude/**
+.agents/**
+.mimosa/**
+/**/.mimosa/**
+.zcode/**
+.mcp.json
+.codex
+.zcodeignore
+AGENTS.md
+
+######################################################################
+# Project specific
+
+script/**
+sql/**
+# 生产环境敏感配置（服务器部署目录维护，模板见 .env.example）
+.env
+.cnb.yml
+Dockerfile
+docker-compose.yml
+deploy.sh
+docs/**

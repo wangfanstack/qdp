@@ -1,0 +1,102 @@
+package cn.sailstack.qdp.module.member.service.point;
+
+import cn.sailstack.qdp.framework.common.util.object.ObjectUtils;
+import cn.sailstack.qdp.framework.common.util.string.StrUtils;
+import org.apache.commons.lang3.StringUtils;
+import cn.sailstack.qdp.framework.common.pojo.PageResult;
+import cn.sailstack.qdp.module.member.controller.admin.point.vo.recrod.MemberPointRecordPageReqVO;
+import cn.sailstack.qdp.module.member.controller.app.point.vo.AppMemberPointRecordPageReqVO;
+import cn.sailstack.qdp.module.member.dal.dataobject.point.MemberPointRecordDO;
+import cn.sailstack.qdp.module.member.dal.dataobject.user.MemberUserDO;
+import cn.sailstack.qdp.module.member.dal.mysql.point.MemberPointRecordMapper;
+import cn.sailstack.qdp.module.member.enums.point.MemberPointBizTypeEnum;
+import cn.sailstack.qdp.module.member.service.user.MemberUserService;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
+import java.util.Set;
+
+import static cn.sailstack.qdp.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.sailstack.qdp.framework.common.util.collection.CollectionUtils.convertSet;
+import static cn.sailstack.qdp.module.member.enums.ErrorCodeConstants.USER_POINT_NOT_ENOUGH;
+
+
+/**
+ * 积分记录 Service 实现类
+ *
+ * @author QingX
+ */
+@Slf4j
+@Service
+@Validated
+public class MemberPointRecordServiceImpl implements MemberPointRecordService {
+
+    @Resource
+    private MemberPointRecordMapper memberPointRecordMapper;
+
+    @Resource
+    private MemberUserService memberUserService;
+
+    @Override
+    public PageResult<MemberPointRecordDO> getPointRecordPage(MemberPointRecordPageReqVO pageReqVO) {
+        // 根据用户昵称查询出用户 ids
+        Set<Long> userIds = null;
+        if (StringUtils.isNotBlank(pageReqVO.getNickname())) {
+            List<MemberUserDO> users = memberUserService.getUserListByNickname(pageReqVO.getNickname());
+            // 如果查询用户结果为空直接返回无需继续查询
+            if (CollectionUtils.isEmpty(users)) {
+                return PageResult.empty();
+            }
+            userIds = convertSet(users, MemberUserDO::getId);
+        }
+        // 执行查询
+        return memberPointRecordMapper.selectPage(pageReqVO, userIds);
+    }
+
+    @Override
+    public PageResult<MemberPointRecordDO> getPointRecordPage(Long userId, AppMemberPointRecordPageReqVO pageReqVO) {
+        return memberPointRecordMapper.selectPage(userId, pageReqVO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void createPointRecord(Long userId, Integer point, MemberPointBizTypeEnum bizType, String bizId) {
+        if (point == 0) {
+            return;
+        }
+        // 1. 校验用户积分余额
+        MemberUserDO user = memberUserService.getUser(userId);
+        Integer userPoint = ObjectUtils.defaultIfNull(user.getPoint(), 0);
+        int totalPoint = userPoint + point; // 用户变动后的积分
+        if (totalPoint < 0) {
+            // 特殊：下单抵扣积分时，积分不足需抛出异常，使订单一起回滚。否则并发下单时，后一笔未扣积分却下单成功
+            // 其它业务（例如说取消订单时，扣除已赠送的积分）保持原逻辑：积分不足时，打印日志后跳过
+            if (bizType == MemberPointBizTypeEnum.ORDER_USE) {
+                throw exception(USER_POINT_NOT_ENOUGH);
+            }
+            log.error("[createPointRecord][userId({}) point({}) bizType({}) bizId({}) {}]", userId, point, bizType, bizId,
+                    USER_POINT_NOT_ENOUGH);
+            return;
+        }
+
+        // 2. 更新用户积分
+        boolean success = memberUserService.updateUserPoint(userId, point);
+        if (!success) {
+            throw exception(USER_POINT_NOT_ENOUGH);
+        }
+        totalPoint = memberUserService.getUser(userId).getPoint(); // 重新读取变动后的积分，避免并发时使用旧积分
+
+        // 3. 增加积分记录
+        MemberPointRecordDO record = new MemberPointRecordDO()
+                .setUserId(userId).setBizId(bizId).setBizType(bizType.getType())
+                .setTitle(bizType.getName()).setDescription(StrUtils.format(bizType.getDescription(), point))
+                .setPoint(point).setTotalPoint(totalPoint);
+        memberPointRecordMapper.insert(record);
+    }
+
+}

@@ -1,0 +1,15 @@
+DELETE FROM "member_user";
+DELETE FROM "member_address";
+DELETE FROM "member_tag";
+DELETE FROM "member_level";
+DELETE FROM "member_group";
+DELETE FROM "member_point_record";DELETE FROM "member_gift_config";
+DELETE FROM "member_gift_benefit";
+DELETE FROM "member_relation";
+DELETE FROM "member_market";
+DELETE FROM "member_market_history";
+DELETE FROM "member_director";
+DELETE FROM "member_bonus_config";
+DELETE FROM "member_bonus_record";
+DELETE FROM "member_bonus_settle_batch";
+DELETE FROM "member_bonus_settle_detail";

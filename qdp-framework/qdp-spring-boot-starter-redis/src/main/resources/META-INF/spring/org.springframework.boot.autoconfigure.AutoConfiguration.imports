@@ -1,0 +1,2 @@
+cn.sailstack.qdp.framework.redis.config.QdpRedisAutoConfiguration
+cn.sailstack.qdp.framework.redis.config.QdpCacheAutoConfiguration

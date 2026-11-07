@@ -1,0 +1,3 @@
+cn.sailstack.qdp.framework.datasource.config.QdpDataSourceAutoConfiguration
+cn.sailstack.qdp.framework.mybatis.config.QdpMybatisAutoConfiguration
+cn.sailstack.qdp.framework.translate.config.QdpTranslateAutoConfiguration

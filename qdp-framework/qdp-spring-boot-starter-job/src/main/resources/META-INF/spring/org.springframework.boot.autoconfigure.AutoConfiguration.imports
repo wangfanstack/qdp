@@ -1,0 +1,2 @@
+cn.sailstack.qdp.framework.quartz.config.QdpQuartzAutoConfiguration
+cn.sailstack.qdp.framework.quartz.config.QdpAsyncAutoConfiguration

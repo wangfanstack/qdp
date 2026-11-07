@@ -1,0 +1,7 @@
+cn.sailstack.qdp.framework.apilog.config.QdpApiLogAutoConfiguration
+cn.sailstack.qdp.framework.jackson.config.QdpJacksonAutoConfiguration
+cn.sailstack.qdp.framework.swagger.config.QdpSwaggerAutoConfiguration
+cn.sailstack.qdp.framework.web.config.QdpWebAutoConfiguration
+cn.sailstack.qdp.framework.xss.config.QdpXssAutoConfiguration
+cn.sailstack.qdp.framework.banner.config.QdpBannerAutoConfiguration
+cn.sailstack.qdp.framework.encrypt.config.QdpApiEncryptAutoConfiguration

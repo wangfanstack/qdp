@@ -1,0 +1,2 @@
+cn.sailstack.qdp.framework.tracer.config.QdpTracerAutoConfiguration
+cn.sailstack.qdp.framework.tracer.config.QdpMetricsAutoConfiguration

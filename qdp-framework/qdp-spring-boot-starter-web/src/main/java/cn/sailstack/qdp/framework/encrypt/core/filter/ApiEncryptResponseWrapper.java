@@ -1,0 +1,107 @@
+package cn.sailstack.qdp.framework.encrypt.core.filter;
+
+import cn.sailstack.qdp.framework.encrypt.config.ApiEncryptProperties;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+
+/**
+ * 加密响应 {@link HttpServletResponseWrapper} 实现类
+ *
+ * @author 芋道源码
+ */
+public class ApiEncryptResponseWrapper extends HttpServletResponseWrapper {
+
+    private final ByteArrayOutputStream byteArrayOutputStream;
+    private final ServletOutputStream servletOutputStream;
+    private final PrintWriter printWriter;
+
+    public ApiEncryptResponseWrapper(HttpServletResponse response) {
+        super(response);
+        this.byteArrayOutputStream = new ByteArrayOutputStream();
+        this.servletOutputStream = this.getOutputStream();
+        this.printWriter = new PrintWriter(new OutputStreamWriter(byteArrayOutputStream));
+    }
+
+    public void encrypt(ApiEncryptProperties properties,
+                        cn.sailstack.qdp.framework.encrypt.core.crypto.SymmetricCrypto symmetricEncryptor,
+                        cn.sailstack.qdp.framework.encrypt.core.crypto.AsymmetricCrypto asymmetricEncryptor) throws IOException {
+        // 1.1 清空 body
+        HttpServletResponse response = (HttpServletResponse) this.getResponse();
+        response.resetBuffer();
+        // 1.2 获取 body
+        this.flushBuffer();
+        byte[] body = byteArrayOutputStream.toByteArray();
+
+        // 2. 添加加密 header 标识
+        this.addHeader(properties.getHeader(), "true");
+        // 特殊：特殊：https://juejin.cn/post/6867327674675625992
+        this.addHeader("Access-Control-Expose-Headers", properties.getHeader());
+
+        // 3.1 加密 body
+        String encryptedBody = symmetricEncryptor != null ? symmetricEncryptor.encrypt(new String(body, java.nio.charset.StandardCharsets.UTF_8))
+                : asymmetricEncryptor.encrypt(new String(body, java.nio.charset.StandardCharsets.UTF_8));
+        // 3.2 输出加密后的 body：（设置 header 要放在 response 的 write 之前）
+        response.getWriter().write(encryptedBody);
+    }
+
+    @Override
+    public PrintWriter getWriter() {
+        return printWriter;
+    }
+
+    @Override
+    public void flushBuffer() throws IOException {
+        if (servletOutputStream != null) {
+            servletOutputStream.flush();
+        }
+        if (printWriter != null) {
+            printWriter.flush();
+        }
+    }
+
+    @Override
+    public void reset() {
+        byteArrayOutputStream.reset();
+    }
+
+    @Override
+    public ServletOutputStream getOutputStream() {
+        return new ServletOutputStream() {
+
+            @Override
+            public boolean isReady() {
+                return false;
+            }
+
+            @Override
+            public void setWriteListener(WriteListener writeListener) {
+            }
+
+            @Override
+            public void write(int b) {
+                byteArrayOutputStream.write(b);
+            }
+
+            @Override
+            @SuppressWarnings("NullableProblems")
+            public void write(byte[] b) throws IOException {
+                byteArrayOutputStream.write(b);
+            }
+
+            @Override
+            @SuppressWarnings("NullableProblems")
+            public void write(byte[] b, int off, int len) {
+                byteArrayOutputStream.write(b, off, len);
+            }
+
+        };
+    }
+
+}
